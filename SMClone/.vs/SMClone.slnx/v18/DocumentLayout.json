@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Alex\\Desktop\\CSC480 Workspace\\CSC480_Workspace\\SMClone\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{10F301D0-0041-4D71-80B7-98BD0A9054CB}|SMClone.vcxproj|C:\\Users\\Alex\\Desktop\\CSC480 Workspace\\CSC480_Workspace\\SMClone\\SMClone.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{10F301D0-0041-4D71-80B7-98BD0A9054CB}|SMClone.vcxproj|solutionrelative:SMClone.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SMClone.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Desktop\\CSC480 Workspace\\CSC480_Workspace\\SMClone\\SMClone.cpp",
+              "RelativeDocumentMoniker": "SMClone.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Desktop\\CSC480 Workspace\\CSC480_Workspace\\SMClone\\SMClone.cpp",
+              "RelativeToolTip": "SMClone.cpp",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAAABYAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-10-12T02:19:05.017Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

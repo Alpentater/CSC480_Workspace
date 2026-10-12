@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SMClone.vcxproj" Id="10f301d0-0041-4d71-80b7-98bd0a9054cb" />
+</Solution>
