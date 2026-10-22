@@ -55,7 +55,7 @@ CreateAccountScreen::CreateAccountScreen(DatabaseManager *database, QWidget *par
 	layout->addStretch();
 
 	//When the save account button is clicked, call the saveCustomer() function.
-	connect(m_saveButton, &QPushButton::clicked, this, CreateAccountScreen::saveCustomer);
+	connect(m_saveButton, &QPushButton::clicked, this, &CreateAccountScreen::saveCustomer);
 }
 
 //Prepares the screen for creating a brand-new customer.
