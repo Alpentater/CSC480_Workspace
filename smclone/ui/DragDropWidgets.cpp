@@ -1,5 +1,5 @@
 //Header file for the custom drag-and-drop widgets used by the schedule.
-#include "DragDropWidget.h"
+#include "DragDropWidgets.h"
 
 //Qt classes required for drag-and-drop behavior.
 #include <QDrag>

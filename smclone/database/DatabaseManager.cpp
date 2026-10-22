@@ -1,5 +1,8 @@
+// Header file for the DatabaseManager class.
 #include "DatabaseManager.h"
 
+// Qt classes used for filesystem access, SQL queries/errors,
+// application data paths, string lists, and SQL NULL values.
 #include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -7,158 +10,186 @@
 #include <QStringList>
 #include <QVariant>
 
-Database::DatabaseManager() = default;
+// Default constructor for the database manager.
+DatabaseManager::DatabaseManager() = default;
 
-Database::~DatabaseManager(){
-	if(m_database.isOpen()){
-		m_database.close();
-	}
+// Destructor closes the SQLite database connection if it is still open.
+DatabaseManager::~DatabaseManager(){
+    if(m_database.isOpen()){
+        m_database.close();
+    }
 }
 
+// Initializes the database connection and prepares the application data.
+// This creates the data directory, opens SQLite, enables foreign keys,
+// configures a short busy timeout, creates the schema, and seeds technicians.
 bool DatabaseManager::initialize() {
-	const QString dataDirectory = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    // Ask Qt for a writable application-data directory.
+    const QString dataDirectory = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
-	if(!QDir().mkpath(dataDirectory)){
-		setError("Could not create the application data directory: "+dataDirectory);
-		return false;
-	}
+    // Create the application-data directory if it does not already exist.
+    if(!QDir().mkpath(dataDirectory)){
+        setError("Could not create the application data directory: "+dataDirectory);
+        return false;
+    }
 
-	m_databasePath = dataDirectory + QDir::seperator() + "scheduler.db";
-	m_database = QSqlDatabase::addDatabase("QSQLITE", "capstone_scheduler_connection");
-	m_database.setDatabaseName(m_databasePath);
+    // Build the path to the local SQLite database file.
+    m_databasePath = dataDirectory + QDir::separator() + "scheduler.db";
+    // Create a named Qt SQLite connection.
+    m_database = QSqlDatabase::addDatabase("QSQLITE", "capstone_scheduler_connection");
+    m_database.setDatabaseName(m_databasePath);
 
-	if(!m_database.open()){
-		setError(m_database.lastError().text());
-		return false;
-	}
+    // Stop initialization if the database cannot be opened.
+    if(!m_database.open()){
+        setError(m_database.lastError().text());
+        return false;
+    }
 
-	QSqlQuery pragma(m_database);
-	if(!pragma.exec("PRAGMA foreign_keys = ON")){
-		setError(pragma.lastError().text());
-		return false;
-	}
+    QSqlQuery pragma(m_database);
+    // Enable SQLite foreign-key enforcement so invalid customer/technician
+    // relationships cannot be saved.
+    if(!pragma.exec("PRAGMA foreign_keys = ON")){
+        setError(pragma.lastError().text());
+        return false;
+    }
 
-	if(!pragma.exec("PRAGMA busy_timeout = 2000")){
-		setError(pragma.lastError().text());
-		return false;
-	}
+    // Wait briefly when SQLite is temporarily busy instead of failing instantly.
+    if(!pragma.exec("PRAGMA busy_timeout = 2000")){
+        setError(pragma.lastError().text());
+        return false;
+    }
 
-	return createSchema() && seedTechnicians();
+    // Create tables/indexes and add default technicians.
+    return createSchema() && seedTechnicians();
 }
 
+// Returns the most recent database error message.
 QString DatabaseManager::lastError() const {return m_lastError; }
+// Returns the full path to the SQLite database file.
 QString DatabaseManager::databasePath() const { return m_databasePath; }\
 
+// Creates the customers, technicians, and work_orders tables plus
+// indexes used to improve common lookup and scheduling queries.
 bool DatabaseManager::createSchema(){
-	QSqlQuery query(m_database);
+    QSqlQuery query(m_database);
 
-	const QString customersSql = R"(
-		CREATE TABLE IF NOT EXISTS customers (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			phone TEXT,
-			email TEXT,
-			service_address TEXT NOT NULL
-		)
-	)";
+    // SQL definition for the customer account table.
+    const QString customersSql = R"(
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT,
+            email TEXT,
+            service_address TEXT NOT NULL
+        )
+    )";
 
-	const QString techniciansSql = R"(
-		CREATE TABLE IF NOT EXISTS technicians (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			active INTEGER NOT NULL DEFAULT 1
-		)
-	)";
+    // SQL definition for technicians shown on the schedule.
+    const QString techniciansSql = R"(
+        CREATE TABLE IF NOT EXISTS technicians (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1
+        )
+    )";
 
-	const QString workOrdersSql = R"(
-		CREATE TABLE IF NOT EXISTS work_orders(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			customer_id INTEGER NOT NULL,
-			technician_id INTEGER,
-			scheduled_start TEXT,
-			service_address TEXT NOT NULL,
-			service_description TEXT NOT NULL,
-			notes TEXT,
-			status TEXT NOT NULL DEFAULT 'Unscheduled',
-			FOREIGN KEY(customer_id) REFERENCES customers(id),
-			FOREIGN KEY(technician_id) REFERENCES technicians(id)
-		)
-	)";
+    // SQL definition for work orders. technician_id and scheduled_start
+    // may be NULL while a work order is still Unscheduled in the Deck.
+    const QString workOrdersSql = R"(
+        CREATE TABLE IF NOT EXISTS work_orders(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            technician_id INTEGER,
+            scheduled_start TEXT,
+            service_address TEXT NOT NULL,
+            service_description TEXT NOT NULL,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'Unscheduled',
+            FOREIGN KEY(customer_id) REFERENCES customers(id),
+            FOREIGN KEY(technician_id) REFERENCES technicians(id)
+        )
+    )";
 
-	if(!query.exec(customersSql) || !query.exec(techniciansSql) || !query.exec(workOrdersSql)) {
-		setError(query.lastError().text());
-		return false;
-	}
+    if(!query.exec(customersSql) || !query.exec(techniciansSql) || !query.exec(workOrdersSql)) {
+        setError(query.lastError().text());
+        return false;
+    }
 
-	const QStringList indexes = {
+    // Index fields that are searched frequently to improve performance.
+    const QStringList indexes = {
         "CREATE INDEX IF NOT EXISTS idx_work_orders_customer ON work_orders(customer_id)",
         "CREATE INDEX IF NOT EXISTS idx_work_orders_technician ON work_orders(technician_id)",
         "CREATE INDEX IF NOT EXISTS idx_work_orders_start ON work_orders(scheduled_start)"
-	};
+    };
 
-	for (const QString &sql : indexes){
-		if(!query.exec(sql)){
-			setError(query.lastError().text());
-			return false;
-		}
-	}
+    for (const QString &sql : indexes){
+        if(!query.exec(sql)){
+            setError(query.lastError().text());
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
+// Adds a few default technicians the first time the database is created.
 bool DatabaseManager::seedTechnicians(){
-	
-	QSqlQuery query(m_database);
-	if(!query.exec("SELECT COUNT(*) FROM technicians")) {
-		setError(query.lastError().text());
-		return false;
-	}
+    
+    QSqlQuery query(m_database);
+    if(!query.exec("SELECT COUNT(*) FROM technicians")) {
+        setError(query.lastError().text());
+        return false;
+    }
 
-	if(!query.next() || query.value(0).toInt() > 0){
-		return true;
-	}
+    if(!query.next() || query.value(0).toInt() > 0){
+        return true;
+    }
 
-	if(!m_database.transaction()){
-		setError(m_database.lastError().text());
-		return false;
-	}
+    // Start a transaction so the related database changes succeed or fail together.
+    if(!m_database.transaction()){
+        setError(m_database.lastError().text());
+        return false;
+    }
 
-	QSqlQuery insert(m_database);
-	insert.prepare("INSERT INTO technicians(name, active) VALUES(:name, 1)");
+    QSqlQuery insert(m_database);
+    insert.prepare("INSERT INTO technicians(name, active) VALUES(:name, 1)");
 
-	const QStringList names = {"Technician 1", "Technician 2", "Technician 3"};
-	for(const QString &name : names){
-		insert.bindValue(":name", name);
-		if(!insert.exec()){
-			m_database.rollback();
-			setError(insert.lastError().text());
-			return false;
-		}
-	}
+    const QStringList names = {"Technician 1", "Technician 2", "Technician 3"};
+    for(const QString &name : names){
+        insert.bindValue(":name", name);
+        if(!insert.exec()){
+            m_database.rollback();
+            setError(insert.lastError().text());
+            return false;
+        }
+    }
 
-	if(!m_database.commit()){
-		setError(m_database.lastError().text());
-		return false;
-	}
-	return true;
+    // Commit the technician seed transaction.
+    if(!m_database.commit()){
+        setError(m_database.lastError().text());
+        return false;
+    }
+    return true;
 }
 
+// Retrieves all customers ordered alphabetically by name.
 std::vector<Customer> DatabaseManager::customers(){
-	
-	std::vector<Customer> result;
-	QSqlQuery query(m_database);
+    
+    std::vector<Customer> result;
+    QSqlQuery query(m_database);
 
-	if(!query.exec("SELECT id, name, phone, email, service_address FROM customers ORDER BY name")){
-		setError(query.lastError().text());
-		return result;
-	}
+    if(!query.exec("SELECT id, name, phone, email, service_address FROM customers ORDER BY name")){
+        setError(query.lastError().text());
+        return result;
+    }
 
-	while(query.next()){
-		result.emplace_back(query.value(0).toInt(), query.value(1).toString(), query.value(2).toString(), query.value(3).toString(), query.value(4).toString());
-	}
-	return result;
+    while(query.next()){
+        result.emplace_back(query.value(0).toInt(), query.value(1).toString(), query.value(2).toString(), query.value(3).toString(), query.value(4).toString());
+    }
+    return result;
 }
 
+// Retrieves one customer using its unique database ID.
 bool DatabaseManager::customerById(int customerId, Customer &customer){
 
     QSqlQuery query(m_database);
@@ -183,6 +214,7 @@ bool DatabaseManager::customerById(int customerId, Customer &customer){
     return true;
 }
 
+// Inserts a new customer and stores the generated ID back into the object.
 bool DatabaseManager::addCustomer(Customer &customer) {
     QSqlQuery query(m_database);
     query.prepare(R"(
@@ -204,6 +236,7 @@ bool DatabaseManager::addCustomer(Customer &customer) {
     return true;
 }
 
+// Updates an existing customer record.
 bool DatabaseManager::updateCustomer(const Customer &customer){
     QSqlQuery query(m_database);
     query.prepare(R"(
@@ -227,6 +260,7 @@ bool DatabaseManager::updateCustomer(const Customer &customer){
     return true;
 }
 
+// Retrieves all active technicians for the schedule columns.
 std::vector<Technician> DatabaseManager::technicians() {
     std::vector<Technician> result;
     QSqlQuery query(m_database);
@@ -243,17 +277,21 @@ std::vector<Technician> DatabaseManager::technicians() {
     return result;
 }
 
+// Converts the current SQL query row into a WorkOrder object.
+// This helper keeps the work-order lookup functions from duplicating conversion code.
 WorkOrder DatabaseManager::workOrderFromQuery(const QSqlQuery &query) const {
     WorkOrder order;
     order.setId(query.value("id").toInt());
     order.setCustomerId(query.value("customer_id").toInt());
 
+        // Unscheduled work orders do not have an assigned technician.
     if (query.value("technician_id").isNull()) {
         order.setTechnicianId(std::nullopt);
     } else {
         order.setTechnicianId(query.value("technician_id").toInt());
     }
 
+        // Appointment times are stored as ISO-formatted text in SQLite.
     const QString start = query.value("scheduled_start").toString();
     order.setScheduledStart(start.isEmpty() ? QDateTime() : QDateTime::fromString(start, Qt::ISODate));
     order.setServiceAddress(query.value("service_address").toString());
@@ -263,6 +301,7 @@ WorkOrder DatabaseManager::workOrderFromQuery(const QSqlQuery &query) const {
     return order;
 }
 
+// Retrieves every work order, newest first.
 std::vector<WorkOrder> DatabaseManager::allWorkOrders() {
     std::vector<WorkOrder> result;
     QSqlQuery query(m_database);
@@ -278,6 +317,7 @@ std::vector<WorkOrder> DatabaseManager::allWorkOrders() {
     return result;
 }
 
+// Retrieves non-cancelled work orders scheduled for a specific date.
 std::vector<WorkOrder> DatabaseManager::workOrdersForDate(const QDate &date) {
     std::vector<WorkOrder> result;
     QSqlQuery query(m_database);
@@ -301,6 +341,7 @@ std::vector<WorkOrder> DatabaseManager::workOrdersForDate(const QDate &date) {
     return result;
 }
 
+// Retrieves work orders that should appear in the Schedule screen's Deck.
 std::vector<WorkOrder> DatabaseManager::unscheduledWorkOrders() {
     std::vector<WorkOrder> result;
     QSqlQuery query(m_database);
@@ -320,6 +361,7 @@ std::vector<WorkOrder> DatabaseManager::unscheduledWorkOrders() {
     return result;
 }
 
+// Retrieves one work order using its unique database ID.
 bool DatabaseManager::workOrderById(int workOrderId, WorkOrder &workOrder){
     QSqlQuery query(m_database);
     query.prepare("SELECT * FROM work_orders WHERE id = :id");
@@ -338,6 +380,7 @@ bool DatabaseManager::workOrderById(int workOrderId, WorkOrder &workOrder){
     return true;
 }
 
+// Inserts a new work order into the database.
 bool DatabaseManager::addWorkOrder(WorkOrder &workOrder) {
     QSqlQuery query(m_database);
     query.prepare(R"(
@@ -350,12 +393,14 @@ bool DatabaseManager::addWorkOrder(WorkOrder &workOrder) {
     )");
 
     query.bindValue(":customer_id", workOrder.customerId());
+        // Bind the technician ID when scheduled; otherwise store SQL NULL.
     if (workOrder.technicianId()) {
         query.bindValue(":technician_id", *workOrder.technicianId());
     } else {
         query.bindValue(":technician_id", QVariant());
     }
 
+        // Store a valid appointment as ISO text; otherwise store SQL NULL.
     if (workOrder.scheduledStart().isValid()) {
         query.bindValue(":scheduled_start", workOrder.scheduledStart().toString(Qt::ISODate));
     } else {
@@ -376,6 +421,7 @@ bool DatabaseManager::addWorkOrder(WorkOrder &workOrder) {
     return true;
 }
 
+// Updates all editable values of an existing work order.
 bool DatabaseManager::updateWorkOrder(const WorkOrder &workOrder) {
     QSqlQuery query(m_database);
     query.prepare(R"(
@@ -416,6 +462,9 @@ bool DatabaseManager::updateWorkOrder(const WorkOrder &workOrder) {
     return true;
 }
 
+// Schedules or reschedules a work order.
+// Technician, appointment time, and status are updated inside one transaction
+// so a failure can be rolled back without leaving a partially updated order.
 bool DatabaseManager::scheduleWorkOrder(int workOrderId, int technicianId, const QDateTime &start) {
     if (!m_database.transaction()) {
         setError(m_database.lastError().text());
@@ -449,6 +498,9 @@ bool DatabaseManager::scheduleWorkOrder(int workOrderId, int technicianId, const
     return true;
 }
 
+// Returns a scheduled work order to the Deck.
+// Technician and appointment fields are cleared and status becomes Unscheduled
+// as one transaction.
 bool DatabaseManager::unscheduleWorkOrder(int workOrderId) {
     if (!m_database.transaction()) {
         setError(m_database.lastError().text());
@@ -480,4 +532,5 @@ bool DatabaseManager::unscheduleWorkOrder(int workOrderId) {
     return true;
 }
 
+// Stores the most recent database error for the UI to display.
 void DatabaseManager::setError(const QString &error) { m_lastError = error; }
