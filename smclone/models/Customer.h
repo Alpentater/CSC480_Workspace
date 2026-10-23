@@ -14,7 +14,7 @@ public:
 	void setName(const QString &name);
 
 	QString phone() const;
-	void SetPhone(const QString &phone);
+	void setPhone(const QString &phone);
 
 	QString email() const;
 	void setEmail(const QString &email);

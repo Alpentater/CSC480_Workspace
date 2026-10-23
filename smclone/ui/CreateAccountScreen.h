@@ -17,7 +17,7 @@ public:
 	void editCustomer(int customerId);
 
 signals:
-	void custoemrSaved();
+	void customerSaved();
 
 private slots:
 	void saveCustomer();

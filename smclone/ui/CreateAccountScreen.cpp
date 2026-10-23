@@ -77,37 +77,57 @@ void CreateAccountScreen::beginNewCustomer(){
 	m_nameEdit->setFocus();
 }
 
-//Saves the customer information currently entered in the form.
-//If m_editingCustomerId is 0, a new customer is created... otherwise, the existing customer record is updated.
+//Loads an existing customer into the form so the user can edit it.
 void CreateAccountScreen::editCustomer(int customerId){
-	//Retrieving and trimming the required customer fields.
+	Customer customer;
+
+	//Retrieve the selected customer from the database.
+	if(!m_database->customerById(customerId, customer)){
+		QMessageBox::warning(this, "Customer Error", m_database->lastError());
+		return;
+	}
+
+	//Store the ID so saveCustomer() knows this is an update instead of a new account.
+	m_editingCustomerId = customerId;
+	m_titleLabel->setText(QString("Edit Account #%1").arg(customerId));
+	m_saveButton->setText("Save Changes");
+
+	//Load the existing customer information into the form fields.
+	m_nameEdit->setText(customer.name());
+	m_phoneEdit->setText(customer.phone());
+	m_emailEdit->setText(customer.email());
+	m_addressEdit->setText(customer.serviceAddress());
+	m_nameEdit->setFocus();
+}
+
+//Saves the customer information currently entered in the form.
+//If m_editingCustomerId is 0, a new customer is created; otherwise the existing customer is updated.
+void CreateAccountScreen::saveCustomer(){
+	//Retrieve and trim the required customer fields.
 	const QString name = m_nameEdit->text().trimmed();
 	const QString address = m_addressEdit->text().trimmed();
 
-	//Checking to make sure the required fields are filled in. If not, throw a warning and return.
+	//Make sure the required fields are filled in before saving.
 	if(name.isEmpty() || address.isEmpty()){
 		QMessageBox::warning(this, "Invalid Customer", "Name and service address are required.");
 		return;
 	}
 
-	//If the required field check passes... create a customer object using the values that were entered in the form input fields.
+	//Create a Customer object using the current form values.
 	Customer customer(m_editingCustomerId, name, m_phoneEdit->text().trimmed(), m_emailEdit->text().trimmed(), address);
 
-	//If no customer ID exists yet, add a new database record. Otherwise, update the existing customer.
-	const bool ok = m_editingCustomerId == 0 ? m_database->addCustomer(customer) : m_database->updateCustomer(customer);
+	//Add a new customer when the ID is 0; otherwise update the existing record.
+	const bool ok = m_editingCustomerId == 0
+		? m_database->addCustomer(customer)
+		: m_database->updateCustomer(customer);
 
-	//If the database operation failed, display the database error and leave the entered information on screen.
 	if(!ok){
 		QMessageBox::critical(this, "Database Error", m_database->lastError());
 		return;
 	}
-	
-	//Letting the user that the customer was saved successfully.
+
 	QMessageBox::information(this, "Saved", "Customer information was saved successfully.");
 	emit customerSaved();
-
-	//Reset the form so it is ready for another new customer.
 	beginNewCustomer();
 }
-
 

@@ -6,11 +6,11 @@ class DatabaseManager;
 class QLineEdit;
 class QTableWidget;
 
-class ViewAccountScreen : public Qwidget {
+class ViewAccountScreen : public QWidget {
 	Q_OBJECT
 
 public:
-	explicit ViewAccountScreen(DatabaseManagerScreen *database, QWidget, *parent = nullptr);
+	explicit ViewAccountScreen(DatabaseManager *database, QWidget *parent = nullptr);
 	void refresh();
 
 signals:

@@ -3,12 +3,14 @@
 
 //Qt classes used to build and manage the schedule interface.
 #include <QDateEdit>
+#include <QDateTime>
 #include <QHeaderView>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStringList>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
 
@@ -136,7 +138,7 @@ ScheduleScreen::ScheduleScreen(DatabaseManager *database, QWidget *parent) : QWi
     connect(m_scheduleTable, &ScheduleTableWidget::workOrderDropped, this, &ScheduleScreen::scheduleWorkOrder);
     connect(m_deck, &DeckListWidget::workOrderReturnedToDeck, this, &ScheduleScreen::returnWorkOrderToDeck);
     connect(m_scheduleTable, &QTableWidget::cellDoubleClicked, this, &ScheduleScreen::openSelectedWorkOrder);
-    connect(m_deck, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *item, int) { openDeckWorkOrder(item); });
+    connect(m_deck, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *item) { openDeckWorkOrder(item); });
 
     setDate(QDate::currentDate());
 }

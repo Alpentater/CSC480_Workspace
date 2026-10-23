@@ -37,4 +37,4 @@ private:
 	CreateWorkOrderScreen *m_createWorkOrderScreen;
 	ViewWorkOrderScreen *m_viewWorkOrderScreen;
 	ScheduleScreen *m_scheduleScreen;
-}
+};

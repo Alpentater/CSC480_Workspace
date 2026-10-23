@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "models/Customer.h"
-#include "models/Techician.h"
+#include "models/Technician.h"
 #include "models/WorkOrder.h"
 
 class DatabaseManager {

@@ -1,0 +1,5 @@
+C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CMakeFiles/CapstoneScheduler.dir
+C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CMakeFiles/edit_cache.dir
+C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CMakeFiles/rebuild_cache.dir
+C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CMakeFiles/CapstoneScheduler_autogen_timestamp_deps.dir
+C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CMakeFiles/CapstoneScheduler_autogen.dir

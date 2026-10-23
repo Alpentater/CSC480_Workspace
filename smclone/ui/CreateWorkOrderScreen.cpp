@@ -28,10 +28,10 @@ CreateWorkOrderScreen::CreateWorkOrderScreen(DatabaseManager *database, QWidget 
 	m_customerCombo = new QComboBox;
 	m_addressEdit = new QLineEdit;
 	m_descriptionEdit = new QLineEdit;
-	m_notesEdit = new QTextEdit;
+	m_noteEdit = new QTextEdit;
 
 	//Limiting the heighn of the notes box so it dows not take up an excessive amount of space on the screen.
-	m_notesEdit->setMaximumHeight(130);
+	m_noteEdit->setMaximumHeight(130);
 
 	//Create the status dropdown and add each possible WorkOrder state.
 	m_statusCombo = new QComboBox;
@@ -45,7 +45,7 @@ CreateWorkOrderScreen::CreateWorkOrderScreen(DatabaseManager *database, QWidget 
 	form->addRow("Customer*", m_customerCombo);
 	form->addRow("Service Address*", m_addressEdit);
 	form->addRow("Service Description", m_descriptionEdit);
-	form->addRow("Notes", m_notesEdit);
+	form->addRow("Notes", m_noteEdit);
 	form->addRow("Status", m_statusCombo);
 
 	//Create the main vertical layout for this screen.
@@ -111,7 +111,7 @@ void CreateWorkOrderScreen::beginNewWorkOrder(){
 	//Clear any information left in the form.
 	m_addressEdit->clear();
 	m_descriptionEdit->clear();
-	m_notesEdit->clear();
+	m_noteEdit->clear();
 
 	//Every newly created work order begins in the unschedueld state and will initially appear in the deck/
 	m_statusCombo->setCurrentText("Unscheduled");
@@ -151,7 +151,7 @@ void CreateWorkOrderScreen::editWorkOrder(int workOrderId){
 	//Load the existing work-order information into the form.
 	m_addressEdit->setText(order.serviceAddress());
 	m_descriptionEdit->setText(order.serviceDescription());
-	m_notesEdit->setPlainText(order.notes());
+	m_noteEdit->setPlainText(order.notes());
 	m_statusCombo->setCurrentText(WorkOrder::statusToString(order.status()));
 	m_statusCombo->setEnabled(true);
 }
@@ -205,7 +205,7 @@ void CreateWorkOrderScreen::saveWorkOrder(){
 	order.setServiceAddress(address);
 	order.setServiceDescription(description);
 	//Retrieve the notes form the QTextEdit field.
-	order.setNotes(m_notesEdit->toPlainText().trimmed());
+	order.setNotes(m_noteEdit->toPlainText().trimmed());
 
 	//Handle creation of a brand-new work order.
 	if(m_editingWorkOrderId == 0){

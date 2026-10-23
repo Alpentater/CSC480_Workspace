@@ -1,0 +1,24 @@
+# ninja log v6
+20	437	8144287139944802	CapstoneScheduler_autogen/timestamp	2203cca174c42cb0
+20	437	8144287139944802	CapstoneScheduler_autogen/mocs_compilation.cpp	2203cca174c42cb0
+853	2297	8144283893136143	CMakeFiles/CapstoneScheduler.dir/models/Technician.cpp.obj	15dd39058a511deb
+846	2885	8144283893066143	CMakeFiles/CapstoneScheduler.dir/main.cpp.obj	34e9335102eceabf
+20	437	8144287139944802	C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CapstoneScheduler_autogen/timestamp	2203cca174c42cb0
+857	2592	8144283893176152	CMakeFiles/CapstoneScheduler.dir/models/WorkOrder.cpp.obj	931ec2669ccf39d4
+889	3502	8144283893496156	CMakeFiles/CapstoneScheduler.dir/ui/ViewWorkOrderScreen.cpp.obj	9d4ca49e960339a9
+20	437	8144287139944802	C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CapstoneScheduler_autogen/mocs_compilation.cpp	2203cca174c42cb0
+849	2499	8144283893106148	CMakeFiles/CapstoneScheduler.dir/models/Customer.cpp.obj	778b12c62e504e93
+861	2667	8144283893216143	CMakeFiles/CapstoneScheduler.dir/models/Schedule.cpp.obj	dbf7d8c5ae0b4311
+445	1826	8144287140524816	CMakeFiles/CapstoneScheduler.dir/ui/CreateAccountScreen.cpp.obj	5299c3aec34535d6
+865	3139	8144283893256153	CMakeFiles/CapstoneScheduler.dir/database/DatabaseManager.cpp.obj	5eaa0846a5e75468
+898	3359	8144283893586155	CMakeFiles/CapstoneScheduler.dir/ui/DragDropWidgets.cpp.obj	ab8598a7fe744e07
+884	3383	8144283893446145	CMakeFiles/CapstoneScheduler.dir/ui/CreateWorkOrderScreen.cpp.obj	aab1d2d4614e70b7
+442	1827	8144287140484788	CMakeFiles/CapstoneScheduler.dir/ui/MainWindow.cpp.obj	966c014366558289
+449	1958	8144287140554805	CMakeFiles/CapstoneScheduler.dir/ui/ViewAccountScreen.cpp.obj	265d65c14df976a8
+438	1981	8144287140454821	CMakeFiles/CapstoneScheduler.dir/CapstoneScheduler_autogen/mocs_compilation.cpp.obj	fdb7b795c72b5e3f
+19	145	8144289880200375	CapstoneScheduler_autogen/timestamp	2203cca174c42cb0
+19	145	8144289880200375	CapstoneScheduler_autogen/mocs_compilation.cpp	2203cca174c42cb0
+19	145	8144289880200375	C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CapstoneScheduler_autogen/timestamp	2203cca174c42cb0
+19	145	8144289880200375	C:/Users/Alex/Desktop/CSC480 Workspace/CSC480_Workspace/smclone/build/CapstoneScheduler_autogen/mocs_compilation.cpp	2203cca174c42cb0
+145	1498	8144289881460375	CMakeFiles/CapstoneScheduler.dir/ui/ScheduleScreen.cpp.obj	ffe18f5b3bd8b7b1
+1498	1686	8144289894999458	CapstoneScheduler.exe	f46b11ad77ea944e
